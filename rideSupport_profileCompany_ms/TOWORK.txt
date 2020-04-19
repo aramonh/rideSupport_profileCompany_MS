@@ -1,0 +1,40 @@
+git clone https://github.com/laradock/laradock.git
+
+cp env-example .env
+
+
+
+
+env proy
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=rideSupport_profileCompany_db
+DB_USERNAME=user
+DB_PASSWORD=password
+
+env laradock
+MYSQL_DATABASE=rideSupport_profileCompany_db
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_PORT=3306
+MYSQL_ROOT_PASSWORD=123
+MYSQL_ENTRYPOINT_INITDB=./mysql/docker-entrypoint-initdb.d
+
+
+
+#SQL COMMAND
+docker-compose exec db bash
+
+mysql -u root -p
+
+show databases;
+CREATE USER 'user'@'%' IDENTIFIED BY 'password';
+FLUSH PRIVILEGES;
+GRANT ALL PRIVILEGES ON *.* TO 'user'@'%';
+
+
+
+#ARTISAN COMMAND
+docker-compose exec workspace bash
+php artisan migrate
