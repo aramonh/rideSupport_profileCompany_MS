@@ -17,7 +17,7 @@ env laradock
 MYSQL_DATABASE=rideSupport_profileCompany_db
 MYSQL_USER=root
 MYSQL_PASSWORD=
-MYSQL_PORT=3306
+MYSQL_PORT=3005
 MYSQL_ROOT_PASSWORD=123
 MYSQL_ENTRYPOINT_INITDB=./mysql/docker-entrypoint-initdb.d
 

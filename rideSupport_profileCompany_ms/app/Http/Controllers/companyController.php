@@ -3,37 +3,109 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
 use App\Company;
 use App\Login;
 
 class companyController extends Controller
 {
     
-    public function login(Request $request){
-        $email = $request->input('email');
-        $password = $request->input('password');
 
-        $companys= Login::where('email',$email)->first();
 
-            if($companys==""){
-                return response("Username/Email does not exist, please register.");
+
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+        try {
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'invalid_credentials'], 400);
             }else{
-                if($companys["password"]!=$password) {
-                    return response("The password is wrong, try again with another one.");
-                }else{
-                    //TODO Devolver TOKENs
-                    return response("Authorizated");
-                    //return response()->json($companys);
-                }
+                
+               //HACER PARA GUARDAR EL ULTIMO TOKEN LOGUEADO
+       
+    
+             
             }
-            return 0;
+
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'could_not_create_token'], 500);
+        }
+        return response()->json(compact('token'));
     }
 
+    
+
+
+    public function getAuthenticatedUser()
+    {
+        try {
+            if (!$companys= JWTAuth::parseToken()->authenticate()) {
+                    return response()->json(['user_not_found'], 404);
+            }
+            } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+                    return response()->json(['token_expired'], $e->getStatusCode());
+            } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+                    return response()->json(['token_invalid'], $e->getStatusCode());
+            } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+                    return response()->json(['token_absent'], $e->getStatusCode());
+            }
+            return response()->json(compact('companys'));
+    }
+
+
+
+
+    public function register(Request $request)
+        {
+                $validator = Validator::make($request->all(), [
+                
+                'email' => 'required|string|email|max:255|unique:companys',
+                'password' => 'required|string',
+                'name' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'phone' => 'required|integer',
+                'manager' => 'required|string|max:255',
+            ]);
+
+            if($validator->fails()){
+                    return response()->json($validator->errors()->toJson(), 400);
+            }
+
+            $companys = new Company();
+             
+        $companys["email"] = $request->input('email');
+        $companys["password"] = Hash::make($request->input('password'));
+        $companys["name"] = $request->input('name');
+        $companys["city"] = $request->input('city');
+        $companys["address"] = $request->input('address');
+        $companys["phone"] = $request->input('phone');
+        $companys["manager"] = $request->input('manager');
+       
+
+        $companys->save();
+
+            $token = JWTAuth::fromUser($companys);
+            return response()->json(compact('companys','token'),201);
+        }
+
+
+        public function logout()
+        {
+            JWTAuth::invalidate(JWTAuth::getToken());
+            return response()->json(['message' => 'Successfully logged out']);
+        }
+
+/*
     public function create(Request $request){
         $companys = new Company();
              
         $companys["email"] = $request->input('email');
-        $companys["password"] = $request->input('password');
+        $companys["password"] = Hash::make($request->input('password'));
         $companys["name"] = $request->input('name');
         $companys["city"] = $request->input('city');
         $companys["address"] = $request->input('address');
@@ -43,7 +115,7 @@ class companyController extends Controller
 
         $companys->save();
         return response()->json($companys);
-    }
+    }*/
 
     public function getAll(){
         $companys= Company::all();
@@ -64,7 +136,7 @@ class companyController extends Controller
             $companys["email"] = $request->input('email');
         }
         if($request->input('password')){
-            $companys["password"] = $request->input('password');
+            $companys["password"] = Hash::make( $request->input('password'));
         }
         if($request->input('name')){
             $companys["name"] = $request->input('name');
@@ -80,6 +152,9 @@ class companyController extends Controller
         }
         if($request->input('manager')){
             $companys["manager"] = $request->input('manager');
+        }
+        if($request->input('token')){
+            $companys["remember_token"] = $request->input('token');
         }
         
         

@@ -14,16 +14,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
+/*Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});*/
+Route::group(['middleware' => ['jwt.verify']], function() {
+    /*AÑADE AQUI LAS RUTAS QUE QUIERAS PROTEGER CON JWT*/
+    Route::get('/company','companyController@getAll');
+    Route::get('/company/{id}','companyController@getById');
+    Route::delete('/company/{id}','companyController@deleteById');
+
+    Route::post('/company/logout','companyController@logout');
 });
 
-
 //CUSTOM ROUTES
-Route::post('/company/login','companyController@login');
-
-Route::post('/company','companyController@create');
-Route::get('/company','companyController@getAll');
-Route::get('/company/{id}','companyController@getById');
+Route::post('/company/login','companyController@authenticate');
+Route::post('/company','companyController@register');
 Route::put('/company/{id}','companyController@updateById');
-Route::delete('/company/{id}','companyController@deleteById');
+
+
