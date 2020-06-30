@@ -19,9 +19,6 @@ use Illuminate\Support\Facades\Route;
 });*/
 Route::group(['middleware' => ['jwt.verify']], function() {
     /*AÑADE AQUI LAS RUTAS QUE QUIERAS PROTEGER CON JWT*/
-    Route::get('/company','companyController@getAll');
-    Route::get('/company/{id}','companyController@getById');
-    Route::delete('/company/{id}','companyController@deleteById');
 
     Route::post('/company/logout','companyController@logout');
 });
@@ -31,4 +28,7 @@ Route::post('/company/login','companyController@authenticate');
 Route::post('/company','companyController@register');
 Route::put('/company/{id}','companyController@updateById');
 
+Route::get('/company','companyController@getAll');
+Route::get('/company/{id}','companyController@getById');
+Route::delete('/company/{id}','companyController@deleteById');
 
